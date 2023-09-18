@@ -20,15 +20,20 @@ class MessagesController < ApplicationController
     @message.user_id=current_user.id
     @message.room_id=session[:room_id].to_i
     @message.save
-   respond_to do |format|
-    if @message.save
-      format.turbo_stream
-      format.html { redirect_to messages_path(id: session[:room_id].to_i), notice: "Todo was successfully created." }
-    else
-      format.html { render :new, status: :unprocessable_entity }
-    end
-  end
 
+    html=render( partial: "messages/message",
+        locals: {message:@message}
+      )
+   # respond_to do |format|
+   #  if @message.save
+   #    format.turbo_stream
+   #    format.html { redirect_to messages_path(id: session[:room_id].to_i), notice: "Todo was successfully created." }
+   #  else
+   #    format.html { render :new, status: :unprocessable_entity }
+   #  end
+  # end
+  #   debugger
+      ActionCable.server.broadcast "room_channel_#{@message.room_id}", {html:html}
   end
   private
   def set_id
